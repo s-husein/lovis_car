@@ -1,8 +1,12 @@
 #define F_CPU 4000000UL  
+#define BAUD 9600
+#define UBBR_VAL (F_CPU/16/BAUD - 1)
+
 #include <avr/io.h>
 #include<util/delay.h>
 #include <stdbool.h>
 #include <avr/interrupt.h>
+
 volatile uint8_t s = 0, m = 0, h = 0;
 volatile bool s_up = false, min_up=false, hr_up=false;
 void lcd_wr(unsigned char com, bool ins){
@@ -47,6 +51,19 @@ void init_timer1(){
 	TIMSK |= (1 << OCIE1A);
 	sei();
 }
+
+void init_uart(){
+ 	UBRRH = (uint8_t)(UBBR_VAL >> 8);
+	UBRRL = (uint8_t)UBBR_VAL;
+	UCSRB = (1 << RXEN) | (1 << TXEN);
+	UCSRC = (1 << URSEL) | (1 << UCSZ1) | (1 << UCSZ0);
+}
+
+uint8_t read_uart(){
+	while(!(UCSRA & 0x90));
+	return UDR;
+}
+
 ISR(TIMER1_COMPA_vect){
 	s_up = true;
 	s++;
@@ -63,35 +80,20 @@ ISR(TIMER1_COMPA_vect){
 	}
 	
 }
+
 int main(void) {
-	init_timer1();
+	uint8_t x = 0;
+//	init_timer1();
 	DDRA |= 0XFF;//declaring all pins of port a as output
 	DDRB |= 0x03;//declaring first two pins of port b as output for enable (EN) and register select (RS)
 	PORTA = 0X00;// resetting
 	PORTB &= ~(0x03);// setting both pins to zero
+	init_uart();
 	init_lcd();
-	mv_cursor(1, 5);
-	wr_num(h);
-	lcd_wr(':', 0);
-	wr_num(m);
-	lcd_wr(':', 0);
-	wr_num(s);
 	while(1){
-		if(s_up){
-			mv_cursor(1, 11);
-			wr_num(s);
-			s_up=false;
-			if(min_up){
-				mv_cursor(1, 8);
-				wr_num(m);
-				min_up=false;
-				if(hr_up){
-					mv_cursor(1, 5);
-					wr_num(h);
-					hr_up=false;	
-				}
-			}	
-		}
+		x = read_uart();
+		mv_cursor(1,1);
+		lcd_wr(x, 0);		
 	}
 	return 0;
 }
