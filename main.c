@@ -7,12 +7,11 @@
 #include <stdbool.h>
 #include <avr/interrupt.h>
 
-unsigned char data[2];
+unsigned char data[2] = {0xff, 0xff};
 unsigned char ind=0;
 void lcd_wr(unsigned char com, bool ins){
 	PORTA = com;//storing instruction to port a
-	if(ins)
-		PORTB &= ~0x02;//turning RS to 0
+	if(ins) PORTB &= ~0x02;//turning RS to 0
 	else 	PORTB |= 0X02;
 	PORTB |= 0x01;//enabling
 	_delay_us(2);
@@ -51,9 +50,16 @@ void init_timer1(){
 	TIMSK |= (1 << OCIE1A);
 
 }
+void init_timer0(){
+	TCCR0 = 0x79;
+	OCR0 = 0xff;
+}
+void init_timer2(){
+	TCCR2 = 0x79;
+	OCR2 = 0xff;
+}
 void init_pwm_1(){
 	DDRD |= 0X30;
-	
 }
 void init_uart(){
  	UBRRH = (uint8_t)(UBBR_VAL >> 8);
@@ -87,13 +93,18 @@ ISR(USART_RXC_vect){
 	data[ind] = UDR;
 	ind++;
 	if (ind >=2) ind=0;
+	OCR0 = data[0];
+	OCR2 = data[1];
 }
 int main(void) {
 //	init_timer1();
+	DDRD |= 0x80;
 	DDRA |= 0XFF;//declaring all pins of port a as output
-	DDRB |= 0x03;//declaring first two pins of port b as output for enable (EN) and register select (RS)
+	DDRB |= 0x0B;//declaring first two pins of port b as output for enable (EN) and register select (RS)
 	PORTA = 0X00;// resetting
 	PORTB &= ~(0x03);// setting both pins to zero
+	init_timer0();
+	init_timer2();
 	init_uart();
 	sei();
 	init_lcd();
