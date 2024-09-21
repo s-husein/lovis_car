@@ -1,9 +1,9 @@
-#define F_CPU 4000000UL  
-#define BAUD 9600
-#define UBBR_VAL (F_CPU/16/BAUD - 1)
+#define F_CPU 16000000UL  
+#define BAUD 1000000
+#define UBBR_VAL (F_CPU/8/BAUD - 1)
 
 #include <avr/io.h>
-#include<util/delay.h>
+#include <util/delay.h>
 #include <stdbool.h>
 #include <avr/interrupt.h>
 
@@ -45,25 +45,25 @@ void wr_num(uint8_t num){
 	wr_str(str);
 }
 void init_timer1(){
-	TCCR1B |= (1 << WGM12) | (1 << CS12);
-	OCR1A = 15300;
-	TIMSK |= (1 << OCIE1A);
+	TCNT1 = 0;
+	ICR1 = 39999;
+	TCCR1A |= (1 << COM1A1) | (1 << WGM11);
+	TCCR1B |= (1 << CS11) | (1 << WGM12) | (1 << WGM13);
+	OCR1A = 0;
 
 }
 void init_timer0(){
-	TCCR0 = 0x79;
+	TCCR0 = 0x7d;
 	OCR0 = 0xff;
 }
 void init_timer2(){
-	TCCR2 = 0x79;
+	TCCR2 = 0x7d;
 	OCR2 = 0xff;
 }
-void init_pwm_1(){
-	DDRD |= 0X30;
-}
 void init_uart(){
- 	UBRRH = (uint8_t)(UBBR_VAL >> 8);
-	UBRRL = (uint8_t)UBBR_VAL;
+ 	UBRRH = (unsigned char)(UBBR_VAL >> 8);
+	UBRRL = (unsigned char)UBBR_VAL;
+	UCSRA |= (1 << U2X);
 	UCSRB = (1 << RXEN) | (1 << TXEN) | (1 << RXCIE);
 	UCSRC = (1 << URSEL) | (1 << UCSZ1) | (1 << UCSZ0);
 }
@@ -73,22 +73,6 @@ uint8_t read_uart(){
 	return UDR;
 }
 
-/*ISR(TIMER1_COMPA_vect){
-	s_up = true;
-	s++;
-	if (s >= 60){
-		min_up=true;
-		s = 0;
-		m++;
-		if(m >= 60){
-			m = 0;
-			hr_up=true;
-			h++;
-			if(h >= 24) h = 0;
-		}
-	}
-	
-}*/
 ISR(USART_RXC_vect){
 	data[ind] = UDR;
 	ind++;
@@ -98,20 +82,33 @@ ISR(USART_RXC_vect){
 }
 int main(void) {
 //	init_timer1();
-	DDRD |= 0x80;
+	DDRD |= 0xA0;
 	DDRA |= 0XFF;//declaring all pins of port a as output
 	DDRB |= 0x0B;//declaring first two pins of port b as output for enable (EN) and register select (RS)
 	PORTA = 0X00;// resetting
 	PORTB &= ~(0x03);// setting both pins to zero
 	init_timer0();
+	init_timer1();
 	init_timer2();
 	init_uart();
 	sei();
 	init_lcd();
 	while(1){
+		OCR1A = 2000;
+		_delay_us(1213000);
+		// OCR1A = 3000;
+		// _delay_ms(2000);
+		// OCR1A = 4000;
+		// _delay_ms(510);
+		OCR1A = 3000;
+		// _delay_ms(10);
+		// OCR1A = 30000;
+		_delay_ms(2000);
+
 		mv_cursor(1, 1);
 		wr_str(data);
 	}
+
 
 //	mv_cursor(1, 1);
 //	wr_str(data);		

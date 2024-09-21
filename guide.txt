@@ -1,0 +1,2 @@
+For connecting the USBASP the wires are fixed they are connected in below order:
+MOSI -> Green ||| MISO -> White ||| RESET -> Orange ||| SCK -> Yellow

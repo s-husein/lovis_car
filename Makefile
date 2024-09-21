@@ -22,3 +22,7 @@ run: test
 	./$<
 test: test.c
 	gcc -o $@ $<
+
+compile:
+	g++ -Wall main.cpp -o main
+	./main
