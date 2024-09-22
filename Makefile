@@ -1,4 +1,4 @@
-MCU=atmega16
+MCU=atmega328p
 PROG=usbasp
 PORT=/dev/tty4
 BR=115200
@@ -6,7 +6,7 @@ BR=115200
 TARGET=main
 SRC=main.c
 FLAGS= -mmcu=$(MCU) -Os -Wall
-AVR_FLAGS= -c $(PROG) -p m16 -P $(PORT) -b $(BR)   
+AVR_FLAGS= -c $(PROG) -p m328p -P $(PORT) -b $(BR)   
 all: $(TARGET).hex
 
 $(TARGET).hex: $(TARGET).elf

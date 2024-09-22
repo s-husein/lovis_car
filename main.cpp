@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
+#include <serial.h>
 
 int main(){
     const char* dev_path = "/dev/input/event22";
