@@ -9,10 +9,11 @@
 #include <math.h>
 #include <stdlib.h>
 
-unsigned char data[3] = {0x00, 0x00, 0x00};
+volatile unsigned char data[3] = {0x00, 0x00, 0x00};
 unsigned char ind=0;
 uint16_t t = 0, calc_delay = 0;
-signed char angle = 0, diff = 0;
+volatile signed char angle = 0;
+short diff = 0;
 // void lcd_wr(unsigned char com, bool ins){
 // 	PORTA = com;//storing instruction to port a
 // 	if(ins) PORTB &= ~0x02;//turning RS to 0
@@ -53,7 +54,7 @@ void init_timer1(){
 	TCCR1B |= (1 << CS11) | (1 << CS10) | (1 << WGM12) | (1 << WGM13);
 	ICR1 = 4999;
 	TCNT1 = 0;
-	OCR1A = 375;
+	OCR1A = 390;
 
 }
 
@@ -80,42 +81,42 @@ void init_uart(){
 	UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
 }
 
-void ang_to_delay(signed char theta){
-	diff = theta - angle;
-	angle += diff;
+void ang_to_delay(){
+	diff = (signed char)data[2] - angle;
+	angle = data[2];
 	if(diff < 0){
 		OCR1A = 250;
 	}
 	else if (diff > 0){
 		OCR1A = 500;
 	}
-	calc_delay = (uint16_t)round(abs(diff)/0.3);
+	calc_delay = (uint16_t)round(abs(diff)/0.298);
 }
 
 ISR(USART_RX_vect){
+	t = 0;
 	data[ind] = UDR0;
 	ind++;
 	if (ind >=3) ind=0;
 	OCR2A = 255 - data[0];
 	OCR2B = 255 - data[1];
-	data[2] = (signed char)(data[2]-127);
-	ang_to_delay(data[2]);
+	OCR1A = (data[2] - 82)*(483 - 273)/(172 - 82) + 273;
 }
 
 ISR(TIMER0_COMPA_vect){
 	if (abs(diff) > 0) {
 		t++;
 		if (t == calc_delay){
-			OCR1A = 375;
-			t = 0;
 			diff = 0;
+			OCR1A = 375;
 		}
+		
 	}
 }
 
 int main(void) {
 	init_uart();
-	init_timer0();
+	// init_timer0();
 	init_timer1();
 	init_timer2();
 	sei();
@@ -135,11 +136,11 @@ int main(void) {
 	// init_lcd();
 	while(1){
 		// OCR1A = 250;
-		// _delay_us(250845);
-		// OCR1A = 375;
+		// _delay_ms(2000);
+		// OCR1A = 385;
 		// _delay_ms(2000);
 		// OCR1A = 500;
-		// _delay_us(250845);
+		// _delay_ms(2000);
 		// OCR1A = 375;
 		// _delay_ms(2000);
 		// OCR1A = 4000;

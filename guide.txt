@@ -1,2 +1,7 @@
 For connecting the USBASP the wires are fixed they are connected in below order:
 MOSI -> Green ||| MISO -> White ||| RESET -> Orange ||| SCK -> Yellow
+
+For servo:
+ocr1a = 390 ==> servo = 0
+ocr1a = 155 ==> servo = -90
+ocr1a = 630 ==> servo = 90
