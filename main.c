@@ -100,7 +100,7 @@ ISR(USART_RX_vect){
 	if (ind >=3) ind=0;
 	OCR2A = 255 - data[0];
 	OCR2B = 255 - data[1];
-	OCR1A = (data[2] - 82)*(483 - 273)/(172 - 82) + 273;
+	OCR1A = (data[2] - 97)*(470 - 312)/(157 - 97) + 312;
 }
 
 ISR(TIMER0_COMPA_vect){
