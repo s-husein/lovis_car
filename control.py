@@ -1,7 +1,11 @@
-import serial
+import socket
 import pygame
 
-ser = serial.Serial('/dev/ttyUSB0', 1000000)
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+targ_ip = "192.168.18.90"
+targ_port = 1234
+
+sock.connect((targ_ip, targ_port))
 
 theta = 0x7f
 goal_theta = 0x7f
@@ -12,15 +16,17 @@ bkwd = 0x00
 fwd_goal = 0x00
 bkwd_goal = 0x00
 
-factor = 0x01
+factor = 0x02
+motor_fac = 0x05
 
 pygame.init()
 window=pygame.display.set_mode((200, 200))
 clock = pygame.time.Clock()
 
 def send_byte(ang, fwd, bkwd):
-    global ser
-    ser.write(fwd.to_bytes(1, 'big') + bkwd.to_bytes(1, 'big') + ang.to_bytes(1, 'big'))
+    global sock
+    data = fwd.to_bytes(1, 'big') + bkwd.to_bytes(1, 'big') + ang.to_bytes(1, 'big')
+    sock.send(data)
 
 
 def calc_angle(goal):
@@ -33,24 +39,25 @@ def calc_angle(goal):
         pass
 
 def accel(goal_fwd):
-    global fwd, factor
+    global fwd, motor_fac
     if fwd < goal_fwd:
-        fwd += factor
+        fwd += motor_fac
     elif fwd > goal_fwd:
-        fwd -= factor
+        fwd -= motor_fac
     else:
         pass
 
 def deccel(goal_bkwd):
-    global bkwd, factor
+    global bkwd, motor_fac
     if bkwd < goal_bkwd:
-        bkwd += factor
+        bkwd += motor_fac
     elif bkwd > goal_bkwd:
-        bkwd -= factor
+        bkwd -= motor_fac
     else:
         pass
 
-# def brake():
+def brake():
+    global ang
     
 
 run = True
@@ -77,7 +84,11 @@ while run:
     if key[pygame.K_x]:
         bkwd_goal = 0xff
     if key[pygame.K_s]:
-        fwd = bkwd
+        fwd = 0xff
+        bkwd = 0xff
+        fwd_goal = 0xff
+        bkwd_goal = 0xff
+        
     
         
 
@@ -85,7 +96,7 @@ while run:
     accel(fwd_goal)
     deccel(bkwd_goal)
     send_byte(theta, fwd, bkwd)
-    clock.tick(200)
+    clock.tick(50)
 
 pygame.quit()
 

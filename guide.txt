@@ -5,3 +5,7 @@ For servo:
 ocr1a = 390 ==> servo = 0
 ocr1a = 155 ==> servo = -90
 ocr1a = 630 ==> servo = 90
+
+for backwheel drive:
+PD3 -> in1
+PB3 -> in2
