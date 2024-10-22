@@ -1,52 +1,37 @@
-#include <ESP32Servo.h>
-#include <WiFi.h>
-#include <WiFiUdp.h>
+#include <SPI.h>
+#include <LoRa.h> 
 
-const char* ssid = "Kay";
-const char* pass = "ZraKay71";
-WiFiUDP udp;
-unsigned short port = 1234;
-const unsigned char servopin = 13;
+int SyncWord = 0x22;
+uint8_t data[3];
 
-const unsigned char frwd_pin = 12;
-const unsigned char bkwd_pin = 14;
-const unsigned short freq = 10000;
-const unsigned char res = 8;
-
-unsigned char incom_pack[3];
-unsigned char pack_size = 0;
-
-
-Servo servo1;
 
 void setup() {
-  pinMode(2, OUTPUT);
-
-  ledcAttachChannel(frwd_pin, freq, res, 0);
-  ledcAttachChannel(bkwd_pin, freq, res, 1);
-  servo1.attach(servopin);
+  Serial.begin(1000000);
   
-  digitalWrite(2, LOW);
-  
-  incom_pack[2] = 127;
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, pass);
-  while(WiFi.status() != WL_CONNECTED){
-    delay(100);
+  while (!Serial);  
+  Serial.println("LoRa Sender");
+  if (!LoRa.begin(433E6)) { // or 915E6, the MHz speed of yout module
+    Serial.println("Starting LoRa failed!");
+    while (1);
   }
-  if(WiFi.status() == WL_CONNECTED) digitalWrite(2, HIGH);
-  udp.begin(port);
+  LoRa.setSpreadingFactor(7);           // ranges from 6-12,default 7 see API docs
+  LoRa.setSignalBandwidth(500E3 );           // for -139dB (page - 112)
+  LoRa.setCodingRate4(5);                 // for -139dB (page - 112)
+  LoRa.setSyncWord(SyncWord);
+  LoRa.setTxPower(20, true);
+  Serial.println("Success setup");
+  
 }
-
-
+ 
 void loop() {
-  pack_size = udp.parsePacket();
-  if(pack_size){
-    udp.read(incom_pack, 3);
+  if(Serial.available()){
+    Serial.readBytes(data, 3);
+    LoRa.beginPacket();
+    LoRa.write(data[2]);
+    LoRa.endPacket();
+//    delay(50);
   }
-  ledcWrite(frwd_pin, incom_pack[0]);
-  ledcWrite(bkwd_pin, incom_pack[1]);
-  int value = map(incom_pack[2], 97, 157, 52, 112);
-  servo1.write(value);
   
+//  Serial.println(val);
+ 
 }

@@ -1,11 +1,13 @@
-import socket
+import serial
 import pygame
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-targ_ip = "192.168.18.90"
-targ_port = 1234
+# sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# targ_ip = "192.168.18.90"
+# targ_port = 1234
 
-sock.connect((targ_ip, targ_port))
+# sock.connect((targ_ip, targ_port))
+
+port = serial.Serial("/dev/ttyACM1", baudrate=1000000)
 
 theta = 0x7f
 goal_theta = 0x7f
@@ -24,9 +26,12 @@ window=pygame.display.set_mode((200, 200))
 clock = pygame.time.Clock()
 
 def send_byte(ang, fwd, bkwd):
-    global sock
+    # global sock
+    global port
     data = fwd.to_bytes(1, 'big') + bkwd.to_bytes(1, 'big') + ang.to_bytes(1, 'big')
-    sock.send(data)
+    # sock.send(data)
+    port.write(data)
+    # print(port.readline())
 
 
 def calc_angle(goal):

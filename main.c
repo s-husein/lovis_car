@@ -54,7 +54,7 @@ void init_timer1(){
 	TCCR1B |= (1 << CS11) | (1 << CS10) | (1 << WGM12) | (1 << WGM13);
 	ICR1 = 4999;
 	TCNT1 = 0;
-	OCR1A = 390;
+	OCR1A = 350;
 
 }
 
@@ -115,13 +115,15 @@ ISR(TIMER0_COMPA_vect){
 }
 
 int main(void) {
-	init_uart();
+	DDRB |= (1 << PB5);
+
+	// init_uart();
 	// init_timer0();
-	init_timer1();
-	init_timer2();
-	sei();
-	DDRD |= (1 << PD3);
-	DDRB |= (1 << PB3) | (1 << PB1);
+	// init_timer1();
+	// init_timer2();
+	// sei();
+	// DDRD |= (1 << PD3);
+	// DDRB |= (1 << PB3) | (1 << PB1);
 //	init_timer1();
 	// DDRD |= 0xA0;
 	// DDRA |= 0XFF;//declaring all pins of port a as output
@@ -135,6 +137,8 @@ int main(void) {
 	// sei();
 	// init_lcd();
 	while(1){
+		PORTB ^= (1 << PB5);
+		_delay_ms(1000);
 		// OCR1A = 250;
 		// _delay_ms(2000);
 		// OCR1A = 385;
