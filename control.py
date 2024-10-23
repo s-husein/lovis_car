@@ -31,7 +31,7 @@ def send_byte(ang, fwd, bkwd):
     data = fwd.to_bytes(1, 'big') + bkwd.to_bytes(1, 'big') + ang.to_bytes(1, 'big')
     # sock.send(data)
     port.write(data)
-    # print(port.readline())
+    print(port.readline())
 
 
 def calc_angle(goal):
@@ -78,6 +78,9 @@ while run:
             goal_theta = 0x7f
             fwd_goal = 0x00
             bkwd_goal = 0x00
+            if event.key == pygame.K_s:
+                fwd = 0x00
+                bkwd = 0x00
 
     key = pygame.key.get_pressed()
     if key[pygame.K_a]:

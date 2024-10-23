@@ -27,8 +27,13 @@ void loop() {
   if(Serial.available()){
     Serial.readBytes(data, 3);
     LoRa.beginPacket();
-    LoRa.write(data[2]);
+    LoRa.write(data, 3);
     LoRa.endPacket();
+    Serial.print(data[0]);
+    Serial.print(", ");
+    Serial.print(data[1]);
+    Serial.print(", ");
+    Serial.println(data[2]);
 //    delay(50);
   }
   
