@@ -7,7 +7,7 @@ import pygame
 
 # sock.connect((targ_ip, targ_port))
 
-port = serial.Serial("/dev/ttyACM1", baudrate=1000000)
+port = serial.Serial("/dev/ttyACM0", baudrate=1000000)
 
 theta = 0x7f
 goal_theta = 0x7f
@@ -78,7 +78,7 @@ while run:
             goal_theta = 0x7f
             fwd_goal = 0x00
             bkwd_goal = 0x00
-            if event.key == pygame.K_s:
+            if event.key == pygame.K_SPACE:
                 fwd = 0x00
                 bkwd = 0x00
 
@@ -89,9 +89,9 @@ while run:
         goal_theta = 0x9d
     if key[pygame.K_w]:
         fwd_goal = 0xff
-    if key[pygame.K_x]:
-        bkwd_goal = 0xff
     if key[pygame.K_s]:
+        bkwd_goal = 0xff
+    if key[pygame.K_SPACE]:
         fwd = 0xff
         bkwd = 0xff
         fwd_goal = 0xff
